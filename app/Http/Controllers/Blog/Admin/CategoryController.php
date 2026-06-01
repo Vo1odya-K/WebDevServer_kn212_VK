@@ -2,20 +2,29 @@
 
 namespace App\Http\Controllers\Blog\Admin;
 
-//use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
+use App\Repositories\BlogCategoryRepository;
+use App\Http\Requests\BlogCategoryCreateRequest;
+use App\Http\Requests\BlogCategoryUpdateRequest;
 use Illuminate\Support\Str;
 
 
 class CategoryController extends BaseController
 {
+    public function __construct(private BlogCategoryRepository $blogCategoryRepository)
+    {
+        //parent::__construct();
+
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $paginator = BlogCategory::paginate(5);
+        //$paginator = BlogCategory::paginate(5);
+        $paginator = $this->blogCategoryRepository->getAllWithPaginate(5);
         return $paginator;
         //dd(__METHOD__);
     }
@@ -23,36 +32,25 @@ class CategoryController extends BaseController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(BlogCategoryCreateRequest $request)
     {
-        $data = $request->all();
-
-        if (empty($data['title'])) {
-            return response()->json(['msg' => 'Поле title є обов\'язковим'], 400);
-        }
+        $data = $request->input();
 
         if (empty($data['slug'])) {
-            $data['slug'] = \Illuminate\Support\Str::slug($data['title']);
+            $data['slug'] = Str::slug($data['title']);
         }
 
-        // Перехоплюємо реальну помилку PHP / Бази даних
-        try {
-            $item = BlogCategory::create($data);
+        $item = BlogCategory::create($data);
 
-            if ($item) {
-                return response()->json(['success' => 'Успішно створено', 'item' => $item], 201);
-            }
-        } catch (\Exception $e) {
-            // Якщо код впаде тут, ми отримаємо чіткий текст помилки в JSON
+        if ($item) {
             return response()->json([
-                'error_message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ], 500);
+                'success' => true,
+                'message' => 'Успішно збережено',
+                'item'    => $item
+            ], 201);
+        } else {
+            return response()->json(['message' => 'Помилка збереження'], 400);
         }
-
-        return response()->json(['msg' => 'Помилка створення'], 400);
-//        dd(__METHOD__);
     }
 
     /**
@@ -66,28 +64,23 @@ class CategoryController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(BlogCategoryUpdateRequest $request, $id)
     {
-        $item = BlogCategory::find($id);
-        if (empty($item)) { //якщо ід не знайдено
-            return back() //redirect back
-            ->withErrors(['msg' => "Запис id=[{$id}] не знайдено"]) //видати помилку
-            ->withInput(); //повернути дані
+        $item = $this->blogCategoryRepository->getEdit($id);
+
+        if (empty($item)) {
+            return response()->json(['message' => 'Запис не знайдено'], 404);
         }
 
-        $data = $request->all(); //отримаємо масив даних, які надійшли з форми
-        if (empty($data['slug'])) { //якщо псевдонім порожній
-            $data['slug'] = Str::slug($data['title']); //генеруємо псевдонім
-        }
+        $data = $request->all();
 
-        $result = $item->update($data);  //оновлюємо дані об'єкта і зберігаємо в БД
+        $result = $item->update($data);
 
         if ($result) {
-            return ['success' => 'Успішно збережено'];
+            return response()->json(['success' => 'Успішно збережено', 'item' => $item], 200);
         } else {
-            return ['msg' => 'Помилка збереження'];
+            return response()->json(['msg' => 'Помилка збереження'], 400);
         }
-//        dd(__METHOD__);
     }
 
     /**
