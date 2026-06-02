@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Blog\Admin\CategoryController;
+use App\Http\Controllers\Api\Blog\Admin\PostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Blog\Admin\PostController;
-use App\Http\Controllers\Blog\Admin\CategoryController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -14,7 +14,6 @@ Route::prefix('blog')->group(function () {
 });
 
 $groupData = [
-    'namespace' => 'App\Http\Controllers\Blog\Admin',
     'prefix' => 'admin/blog',
 ];
 Route::group($groupData, function () {

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Blog\Admin;
+namespace App\Http\Controllers\Api\Blog\Admin;
 
-use App\Http\Controllers\Api\Blog\BaseController as GuestBaseController;
+use App\Http\Controllers\Controller;
 
-abstract class BaseController extends GuestBaseController
+abstract class BaseController extends Controller
 {
     /**
      * BaseController constructor

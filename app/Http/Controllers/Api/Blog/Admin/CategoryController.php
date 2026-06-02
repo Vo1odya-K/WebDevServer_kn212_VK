@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Blog\Admin;
+namespace App\Http\Controllers\Api\Blog\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\BlogCategory;
-use App\Repositories\BlogCategoryRepository;
 use App\Http\Requests\BlogCategoryCreateRequest;
 use App\Http\Requests\BlogCategoryUpdateRequest;
+use App\Models\BlogCategory;
+use App\Repositories\BlogCategoryRepository;
 use Illuminate\Support\Str;
 
 
@@ -14,8 +13,7 @@ class CategoryController extends BaseController
 {
     public function __construct(private BlogCategoryRepository $blogCategoryRepository)
     {
-        //parent::__construct();
-
+        parent::__construct();
     }
 
     /**
@@ -23,10 +21,7 @@ class CategoryController extends BaseController
      */
     public function index()
     {
-        //$paginator = BlogCategory::paginate(5);
-        $paginator = $this->blogCategoryRepository->getAllWithPaginate(5);
-        return $paginator;
-        //dd(__METHOD__);
+        return $this->blogCategoryRepository->getAllWithPaginate(5);
     }
 
     /**
@@ -36,9 +31,7 @@ class CategoryController extends BaseController
     {
         $data = $request->input();
 
-        if (empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['title']);
-        }
+        // КОД ГЕНЕРАЦІЇ СЛАГА ВИДАЛЕНО — ТЕПЕР ПРАЦЮЄ ОБСЕРВЕР
 
         $item = BlogCategory::create($data);
 
@@ -54,14 +47,6 @@ class CategoryController extends BaseController
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-//        dd(__METHOD__);
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(BlogCategoryUpdateRequest $request, $id)
@@ -73,21 +58,15 @@ class CategoryController extends BaseController
         }
 
         $data = $request->all();
-
         $result = $item->update($data);
 
         if ($result) {
-            return response()->json(['success' => 'Успішно збережено', 'item' => $item], 200);
+            return response()->json(['success' => true, 'message' => 'Успішно збережено', 'item' => $item], 200);
         } else {
-            return response()->json(['msg' => 'Помилка збереження'], 400);
+            return response()->json(['message' => 'Помилка збереження'], 400);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-//        dd(__METHOD__);
-    }
+    public function show(string $id) {}
+    public function destroy(string $id) {}
 }
