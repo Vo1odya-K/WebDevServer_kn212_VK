@@ -9,6 +9,7 @@ use App\Repositories\BlogCategoryRepository;
 use App\Repositories\BlogPostRepository;
 use App\Jobs\BlogPostAfterCreateJob;
 use App\Jobs\BlogPostAfterDeleteJob;
+use App\Http\Resources\Api\Blog\Admin\PostResource;
 
 class PostController extends BaseController
 {
@@ -24,7 +25,15 @@ class PostController extends BaseController
      */
     public function index()
     {
-        return $this->blogPostRepository->getAllWithPaginate();
+        // Отримуємо пагіновані дані з репозиторія
+        $paginator = $this->blogPostRepository->getAllWithPaginate();
+
+        // ЗАЛІЗОБЕТОННО: примусово підвантажуємо зв'язки для кожного поста в пагінації,
+        // щоб уникнути помилок і "N+1" запитів всередині PostResource
+        $paginator->getCollection()->load(['user', 'category']);
+
+        // Обгортаємо пагінацію в API Ресурс
+        return PostResource::collection($paginator);
     }
 
     /**
@@ -82,5 +91,17 @@ class PostController extends BaseController
         }
     }
 
-    public function show(string $id) {}
+    public function show(string $id)
+    {
+        $item = $this->blogPostRepository->getEdit($id);
+
+        if (empty($item)) {
+            return response()->json(['message' => "Запис id=[{$id}] не знайдено"], 404);
+        }
+
+        $item->load(['user', 'category']);
+
+        // Обгортаємо один пост в API Ресурс
+        return new PostResource($item);
+    }
 }

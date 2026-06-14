@@ -12,9 +12,12 @@ class PostController extends BaseController
      */
     public function index()
     {
-        $items = BlogPost::all();
+        // Додаємо пагінацію по 25 елементів та підвантажуємо зв'язки для таблиці Nuxt UI
+        $items = BlogPost::with(['user', 'category'])
+            ->orderBy('id', 'desc')
+            ->paginate(25);
 
-        return $items;
+        return response()->json($items);
     }
 
     /**

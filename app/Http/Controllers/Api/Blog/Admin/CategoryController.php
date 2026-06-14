@@ -67,6 +67,25 @@ class CategoryController extends BaseController
         }
     }
 
-    public function show(string $id) {}
-    public function destroy(string $id) {}
+// Показати одну категорію для форми редагування
+    public function show($id)
+    {
+        $item = $this->blogCategoryRepository->getEdit($id);
+        if (empty($item)) {
+            return response()->json(['message' => 'Категорію не знайдено'], 404);
+        }
+        return new CategoryResource($item);
+    }
+
+// Видалення
+    public function destroy($id)
+    {
+        // Твоя логіка видалення через репозиторій/модель
+        $result = $this->blogCategoryRepository->getEdit($id)?->delete();
+
+        if ($result) {
+            return response()->json(['success' => true]);
+        }
+        return response()->json(['message' => 'Помилка видалення'], 400);
+    }
 }

@@ -18,15 +18,13 @@ $groupData = [
     'prefix' => 'admin/blog',
 ];
 Route::group($groupData, function () {
-    //BlogCategory
-    $methods = ['index','store','update',];
+    // Повноцінний CRUD для категорій (додали show та destroy)
     Route::apiResource('categories', CategoryController::class)
-        ->only($methods)
         ->names('blog.admin.categories');
 
-    //BlogPost
+    // Повноцінний CRUD для статей (методи index, store, update, destroy працюють тут)
     Route::apiResource('posts', PostController::class)
-        ->except(['show'])                               //не робити маршрут для метода show
+        ->except(['show'])
         ->names('blog.admin.posts');
 });
 
